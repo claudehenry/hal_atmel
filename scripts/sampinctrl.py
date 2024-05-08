@@ -40,15 +40,40 @@ EXCEPTION = """
 
 
 def get_header_fname(serie, variant, revision):
-    """Get header file name.
+    """
+    Generates the header file name for a SAM family microcontroller based on its
+    series, variant, and revision information.
 
     Args:
-        family: Atmel SAM family.
-        serie: Series.
-        variant: Variant information.
+        serie ("Atmel SAM family".): Atmel SAM series to which the header file
+            name will be constructed.
+            
+            		- `family`: The Atmel SAM family that the series belongs to.
+            		- `serie`: The series of the device, which can be further divided
+            into sub-series based on specific attributes.
+            		- `variant`: The variant information of the device, which distinguishes
+            it from other devices within the same series.
+            
+            	The return value of the function is the header file name, which
+            includes the series and variant information followed by a suffix
+            indicating the revision level of the device.
+        variant ("Atmel SAM family series variant information".): variant information
+            of the Atmel SAM family, which is used to construct the header file name.
+            
+            		- `family`: Atmel SAM family
+            		- `serie`: Series
+            		- `variant`: Variant information (containing various attributes or
+            properties)
+            		- `revision`: Revision number (optional, included in the header file
+            name when provided)
+        revision (int): 4-digit revision number that will be appended to the header
+            file name, uniquely identifying the specific version of the pinctrl
+            configuration for the given series and variant.
 
     Returns:
-        Header file name.
+        str: a header file name that includes the Atmel SAM family, series, and
+        variant information, followed by the revision number (if provided).
+
     """
 
     sufix = ""
@@ -59,13 +84,18 @@ def get_header_fname(serie, variant, revision):
 
 
 def get_port_pin(pin_name):
-    """Obtain port and pin number from a pin name
+    """
+    Parses a pin name into its corresponding port and pin number using regular
+    expressions. If the input is invalid, it raises a `ValueError`.
 
     Args:
-        pin_name: Pin name, e.g. PA0
+        pin_name (str): name of a GPIO pin, and it is used to extract the port and
+            pin number from the pin name through a regular expression match.
 
     Returns:
-        Port and pin, e.g. A, 0.
+        int: a pair of values, where the first value is the port letter (e.g. "A")
+        and the second value is the pin number (e.g. "0").
+
     """
 
     m = re.match(r"P([A-Z])(\d+)", pin_name.upper())
@@ -76,6 +106,19 @@ def get_port_pin(pin_name):
 
 
 def write_gpio_function(f, port, pin_num, fmap, function):
+    """
+    Writes code to define a GPIO pin mapping and function, based on the given parameters.
+
+    Args:
+        f (str): current file being written to, and it is used to write the code
+            for the GPIO function.
+        port (str): GPIO port where the pin is located.
+        pin_num (int): 0-based index of the GPIO pin within the specified port.
+        fmap (int): mapping of the GPIO port, pin number, and function name to
+            their corresponding C syntax definitions.
+        function (str): 4-char code that maps to the desired GPIO pin functionality.
+
+    """
     f.write(f"\n/* p{port.lower()}{pin_num}_{function.lower()} */\n")
     define = f"#define P{port.upper()}{pin_num.upper()}_{function.upper()}"
     define_val = f"{fmap}({port.lower()}, {pin_num}, {function.lower()}, " \
@@ -85,6 +128,30 @@ def write_gpio_function(f, port, pin_num, fmap, function):
 
 def write_wakeup_function(f, port, pin_num, pinmux, periph,
                           signal, fmap, function):
+    """
+    Writes code to define and register a wake-up signal for a peripheral, based
+    on the given parameters.
+
+    Args:
+        f (str): file object and is used to write the definition of the pinout
+            mapping to the corresponding header file.
+        port (str): 16-bit port number where the signal is located.
+        pin_num (int): 0-based index of the pin within the port.
+        pinmux (str): 8-bit PIN multiplexer signal for the specified peripheral interface.
+        periph (str): peripheral that the signal is generated for, which is used
+            to generate the definition name for the signal in the define directive.
+        signal (str): signal name for which the peripheral pin is being configured.
+        fmap (`function`.): 4-byte value that will be used to map the input signal
+            to the output function of the peripheral device.
+            
+            		- `fmap`: A C-style mapping function that takes four arguments -
+            `port`, `pin_num`, `signal`, and `function`. The function returns a
+            value based on the mapping rules defined in the `fmap` string.
+        function (str): 0-based index of the function to be called within the
+            peripheral's API, as defined by `fmap`, and is used to specify the
+            function to be executed when the signal is triggered.
+
+    """
     f.write(f"\n/* p{port.lower()}{pin_num}{pinmux}_{periph}_{signal} "
             f"*/\n")
     define = f"#define P{port.upper()}{pin_num.upper()}" \
@@ -96,6 +163,73 @@ def write_wakeup_function(f, port, pin_num, pinmux, periph,
 
 def write_periph_function(f, port, pin_num, pinmux, periph,
                           signal, fmap, function):
+    """
+    Writes a peripheral function to a header file, defining a macro and a value
+    for it based on input parameters.
+
+    Args:
+        f (str): file to which the code is being written, and it is used to write
+            the output to the file.
+        port (`Port`.): 8-bit port number where the peripheral function will be defined.
+            
+            		- `port`: A `Port` object representing the port where the peripheral
+            is connected.
+            		- `pin_num`: An integer representing the pin number within the port.
+            		- `pinmux`: A string representing the pin multiplexing configuration
+            for the peripheral, which determines how the peripheral is accessed.
+            		- `periph`: A string representing the name of the peripheral device.
+            		- `signal`: A string representing the signal being manipulated by
+            the function.
+            		- `fmap`: A string representing the function mapping table for the
+            peripheral, which maps the peripheral's signals to the corresponding
+            CPU register addresses.
+            		- `function`: A string representing the name of the function being
+            called in the `fmap` table.
+        pin_num (int): 1-based number of the GPIO pin within the port being defined,
+            which is used to construct the define and define_val outputs.
+        pinmux (str): 8-bit input/output pin multiplexing value for the peripheral
+            signal being defined, which determines how the signal is routed to the
+            output pin based on the input values.
+        periph ("peripheral" (in uppercase).): 16-bit peripheral ID of the signal
+            being defined, which is used to generate the definition name for the
+            signal in the output.
+            
+            		- `port`: The port to which the peripheral is connected.
+            		- `pin_num`: The number of the pin on the port where the peripheral
+            is connected.
+            		- `pinmux`: The pin multiplexing status of the pin.
+            		- `periph`: The peripheral being defined, which may be a digital or
+            analog input/output device.
+            		- `signal`: The signal generated by the peripheral.
+            		- `fmap`: A function that maps the port and pin numbers to the
+            corresponding signal value.
+            		- `function`: The name of the function used to define the signal.
+        signal ("const char".): 4-char symbolic name of the signal to be defined,
+            which is used to generate the define statement for the peripheral function.
+            
+            		- `port`: The port that the pin is located in.
+            		- `pin_num`: The number of the pin within the port.
+            		- `pinmux`: The pin multiplexer value for the pin.
+            		- `periph`: The peripheral device that the pin belongs to.
+            		- `signal`: The name of the signal on the peripheral device.
+            		- `fmap`: A function that maps the port, pin number, and pin multiplexer
+            value to a unique identifier for the signal.
+        fmap (function.): mapping of the peripheral pin number to the corresponding
+            function number.
+            
+            		- `fmap` is a macro that expands to a string representing the function
+            call.
+            		- It takes as inputs the port, pin number, pin multiplexer, peripheral,
+            and signal names, respectively.
+            		- The macro uses the `lowercase` method to convert each of these
+            input variables to lowercase before combining them into the final
+            output string.
+            		- The resulting string is a concatenation of these input values
+            separated by underscores.
+        function (str): 16-bit value that is assigned to the peripheral register
+            after the pinmux and signal values have been defined.
+
+    """
     f.write(f"\n/* p{port.lower()}{pin_num}{pinmux}_{periph}_{signal} "
             f"*/\n")
     define = f"#define P{port.upper()}{pin_num.upper()}" \
@@ -107,15 +241,97 @@ def write_periph_function(f, port, pin_num, pinmux, periph,
 
 def generate_atmel_sam_header(outdir, family, fmap, serie,
                               variant, pin_cfgs, revision):
-    """Generate Atmel SAM header with pin configurations.
+    """
+    Generates an Atmel SAM header file with pin configurations based on input
+    parameters and writes it to a specified output directory.
 
     Args:
-        outdir: Output base directory.
-        family: Atmel SAM family.
-        fmap: Function to map pinctrl.
-        series: MCU Series.
-        variant: Variant information.
-        pin_cfgs: Pin configurations.
+        outdir (str): output base directory where the generated Atmel SAM header
+            file will be saved.
+        family (str): Atmel SAM family of microcontrollers that the function will
+            generate a header file for.
+        fmap ("Function".): function to map pinctrl.
+            
+            		- `function`: A string representing the function to map pinctrl.
+            This can be one of `fmap.functions`, which is a set of predefined
+            functions or custom functions defined in the `pinctrl_atmel_sam.yaml`
+            configuration file.
+            		- `series`: A string representing the MCU series. This can be one
+            of `series.values()`, which is a set of predefined series or custom
+            series defined in the `pinctrl_atmel_sam.yaml` configuration file.
+            		- `variant`: An instance of `Variant` containing information about
+            the variant, such as `pincode`, `revision`, and `exception`.
+            		- `pin_cfgs`: A list of tuples containing pin configuration data for
+            each pin on the MCU. Each tuple contains four elements: `port`,
+            `pin_num`, `pinmux`, and `periph` (or `signal`). The `port` and `pin_num`
+            are integers representing the pin number and port name, respectively.
+            `pinmux` is a string indicating the pin mux type, and `periph` or
+            `signal` are strings representing the peripheral or signal name, respectively.
+            
+            	The `fmap` object is destructured to access its properties, which can
+            be used to generate the Atmel SAM header file with the desired pin configurations.
+        serie ("MCU Series" value.): MCU series for which the header file will be
+            generated.
+            
+            		- `series`: This is a string representing the MCU series. It could
+            be one of the following: "micro", "midrange", or "highend".
+            		- `variant`: This is an object that contains various attributes
+            related to the specific variant of the MCU being targeted. Some of
+            these attributes include:
+            		+ `pincode`: A string representing the unique identifier for the pin
+            configuration.
+            		+ `revision`: An integer representing the revision level of the device.
+            		+ `exception`: A boolean indicating whether an exception pin is
+            present in the configuration.
+            		- `fmap`: This is a function that maps pinctrl functionality.
+            		- `pin_cfgs`: This is a list of tuples, each containing four elements:
+            		+ `port`: An integer representing the port number where the pin is
+            located.
+            		+ `pin_num`: An integer representing the pin number within the port.
+            		+ `pinmux`: A string representing the pin multiplexing configuration.
+            		+ `periph`: A string representing the peripheral device that the pin
+            is connected to.
+            		+ `signal`: A string representing the signal name associated with
+            the pin.
+            		+ `function`: A string representing the pinctrl function associated
+            with the pin.
+            
+            	These properties are used in the generation of the Atmel SAM header
+            file, which includes the necessary includes, defines, and function
+            declarations to support the desired pin configurations.
+        variant (object/container that stores variant information.): variant-specific
+            information, such as exception handling and pin configurations, that
+            are included in the generated Atmel SAM header file.
+            
+            		- `family`: The Atmel SAM family that the header is for.
+            		- `series`: The specific MCU series within the specified family.
+            		- `variant`: A dictionary containing variant-specific information,
+            including:
+            		+ `pincode`: A unique identifier for the device's pin configuration.
+            		+ `exception`: An exception handler for the device.
+            		+ `periph`: A list of peripherals supported by the device.
+            		+ `signal`: A list of signals associated with each peripheral.
+            		+ `function`: A list of functions that can be applied to each signal.
+            
+            	The `pin_cfgs` input is a list of pin configurations, which consists
+            of:
+            
+            		- `port`: The port number where the pin is located (e.g., GPIO0, GPIO1).
+            		- `pin_num`: The pin number within the port (e.g., 0, 1).
+            		- `pinmux`: The pin multiplexing configuration (e.g., GPIO_MODULE_
+            PinMux).
+            		- `periph`: The peripheral associated with the pin (e.g., GPIO, I2C).
+            		- `signal`: The signal within the peripheral that the pin is associated
+            with.
+            		- `function`: The function that can be applied to the signal (e.g.,
+            input, output).
+        pin_cfgs (list): 8-element tuple containing the pin configurations for
+            each pin on the Atmel SAM device, which are then written to the header
+            file using the `write_periph_function()` method.
+        revision (int): 4-digit version number of the Atmel SAM header file to be
+            generated, which is used to include the appropriate revision-specific
+            code in the generated header file.
+
     """
 
     ofname = outdir / get_header_fname(serie, variant["pincode"], revision)
@@ -142,13 +358,15 @@ def generate_atmel_sam_header(outdir, family, fmap, serie,
 
 
 def build_atmel_sam_gpio_sets(pin_cfgs, pin):
-    """Build Atmel SAM pin configurations sets.
+    """
+    Builds Atmel SAM GPIO configurations sets by taking a list of pins description
+    and appending new items to a dictionary if they are not already present.
 
     Args:
-        pins: Pins description.
+        pin_cfgs (list): list of Atmel SAM GPIO configuration sets that will be
+            built by the function.
+        pin (str): pin number for which the pin configuration is being built.
 
-    Returns:
-        Dictionary with pins configuration.
     """
 
     port, pin_num = get_port_pin(pin)
@@ -159,15 +377,46 @@ def build_atmel_sam_gpio_sets(pin_cfgs, pin):
 
 
 def build_atmel_sam_sets(pin_cfgs, pin, pin_lst, serie, variant, function):
-    """Build Atmel SAM pin configurations sets.
+    """
+    Generates a dictionary of Atmel SAM pin configurations based on provided series,
+    variant, and pin descriptions. It iterates over the given pin list and adds
+    pin configuration entries for each pin if it meets specific serie and variant
+    criteria and if it is not already included in the dictionary.
 
     Args:
-        serie: MCU Serie.
-        variant: Variant information.
-        pins: Pins description.
+        pin_cfgs (list): dictionary that will store the Atmel SAM pin configurations
+            sets produced by the function.
+        pin (str): 32-bit pin number of the specific pin for which the configuration
+            is being built.
+        pin_lst (list): list of pins configuration for each device series and
+            variant, which is used to filter out the pins that need to be configured
+            based on the given serie and variant information.
+        serie ("MCU Serie".): MCU serie for which the pin configurations will be
+            built.
+            
+            		- `MCU Serie`: This is an integer value that represents the series
+            of the microcontroller. It can take on various values, such as `0x01`
+            for the SAM D21, `0x02` for the SAM E5, and so on.
+            		- `Variant information`: This is a dictionary-like object that
+            contains various properties related to the variant of the microcontroller.
+            It may include attributes such as `pincode`, `clockspeed`, `voltage_range`,
+            and others.
+        variant ("MCU Serie" or "Variant information".): specific variant of the
+            Atmel SAM microcontroller for which the pin configurations are being
+            built.
+            
+            		- `serie`: The MCU series.
+            		- `variant`: A variant information structure containing various
+            attributes, including:
+            		+ `pincode`: A unique identifier for a pin on the MCU.
+            
+            	The function then proceeds to iterate over the `pins` list and checks
+            if each pin should be included in the configuration based on the `serie`
+            and `variant` properties. If the pin should be included, the function
+            appends the pin's configuration to a dictionary of pin configurations.
+        function (str): function that is associated with the pin configuration
+            being built.
 
-    Returns:
-        Dictionary with pins configuration.
     """
 
     if len(pin_lst[0]) > 0:
@@ -184,15 +433,60 @@ def build_atmel_sam_sets(pin_cfgs, pin, pin_lst, serie, variant, function):
 
 
 def build_atmel_sam_pin_cfgs(serie, variant, pins):
-    """Build Atmel SAM pin configurations.
+    """
+    Generates pin configurations for an Atmel SAM MCU based on input series,
+    variant, and pin descriptions. It builds GPIO sets, peripheral, extra, system,
+    LPM, and wakeup configs using the provided pins.
 
     Args:
-        serie: MCU Serie.
-        variant: Variant information.
-        pins: Pins description.
+        serie ("MCU Serie".): Series of the Atmel SAM MCU for which the pin
+            configurations are being built.
+            
+            		- `serie`: The MCU Serie object, which has various attributes such
+            as:
+            		+ `name`: The name of the MCU serie.
+            		+ `family`: The family name of the MCU serie.
+            		+ `variant`: The variant information of the MCU serie.
+            		+ `pins`: A dictionary containing pins description.
+        variant (information object.): specific variant of the Atmel SAM device
+            for which the pin configuration is being generated, and provides
+            information such as the pin code, peripheral IDs, extra pins, system
+            pins, LPM pins, and wake-up pins that are used to customize the pin configuration.
+            
+            		- `serie`: MCU Serie. This property is used to identify the series
+            of the device for which the pin configuration is being built.
+            		- `variant`: Variant information. This property contains details
+            about the specific variant of the device, such as its unique identifier
+            or name.
+            		- `pins`: Pins description. This property is a dictionary containing
+            the pins used in the build process, where each key is the pin number
+            and the value is a dictionary of pin configuration options.
+            
+            	Each option in the pin configuration dictionary contains the following
+            keys:
+            
+            		- `pincodes`: A list of peripheral IDs that are associated with the
+            pin.
+            		- `periph`: Peripheral ID. This key is used to specify which peripheral
+            the pin is associated with.
+            		- `extra`: Extra configuration options for the pin.
+            		- `system`: System-level configuration options for the pin.
+            		- `lpm`: Low-power mode configuration options for the pin.
+            		- `wakeup`: Wake-up configuration options for the pin.
+            
+            	The function processes each pin in the `pins` dictionary and checks
+            if the variant's pin code is present in the pin configuration. If it
+            is, the function builds GPIO sets, peripheral sets, system sets,
+            low-power mode sets, and wake-up sets for the corresponding pins. The
+            resulting pin configurations are stored in a list called `pin_cfgs`.
+        pins (dict): description of pins on the microcontroller, which are used
+            to filter and determine the appropriate configuration for each pin
+            based on the variant information provided.
 
     Returns:
-        Dictionary with pins configuration.
+        dict: a dictionary of pin configurations for an Atmel SAM device, built
+        based on the input variant and pins information.
+
     """
 
     pin_cfgs = []
@@ -225,11 +519,35 @@ def build_atmel_sam_pin_cfgs(serie, variant, pins):
 
 
 def main(indir, outdir) -> None:
-    """Entry point.
+    """
+    Performs the following tasks:
+    	- Unlinks any existing output files with specific names.
+    	- Loads YAML configuration files from the input directory and extracts relevant
+    information.
+    	- Builds pin configurations for Atmel SAM devices based on model, family,
+    map, series, variant, and pins.
+    	- Generates header files for the pin configurations.
 
     Args:
-        indir: Directory with pin configuration files.
-        outdir: Output directory
+        indir (directory object.): directory containing pin configuration files.
+            
+            		- `indir`: A directory containing pin configuration files.
+            		- `outdir`: An output directory where the generated code will be saved.
+        outdir (`os.Pathlike` object.): directory where the pin configuration files
+            will be generated.
+            
+            		- exists(): Checks whether the directory exists.
+            		- glob("sam*-pinctrl.h"): Returns a generator of files in the directory
+            that match the pattern "sam*-pinctrl.h".
+            		- mkdir(): Creates the directory if it does not exist.
+            
+            	Additionally, the following attributes are described:
+            
+            		- is_file(): Checks whether an entry is a file.
+            		- suffix: The file extension of an entry.
+            		- loader: The YAML loader used to load the YAML configuration from
+            the file.
+
     """
 
     if outdir.exists():

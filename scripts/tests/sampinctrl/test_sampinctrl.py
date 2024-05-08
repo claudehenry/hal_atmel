@@ -6,7 +6,20 @@ from sampinctrl import main
 
 
 def test_main(data, tmp_path):
-    """Test that pinctrl headers are generated correctly."""
+    """
+    Verifies that pinctrl headers are generated correctly by comparing the contents
+    of reference files with the generated files in a temporary directory.
+
+    Args:
+        data (`object`.): directory containing the reference pinctrl headers that
+            are used for comparison with the generated files.
+            
+            		- `data`: A dictionary containing the following keys:
+            		+ `FILES`: A list of strings representing the file paths to be checked
+            for correctness.
+        tmp_path (str): directory where the generated pinctrl headers will be stored.
+
+    """
 
     main(data, tmp_path)
 
