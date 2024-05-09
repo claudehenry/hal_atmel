@@ -1,0 +1,862 @@
+[
+  {
+    "name": "sampinctrl.py",
+    "path": "scripts/sampinctrl.py",
+    "content": {
+      "structured": {
+        "description": "",
+        "items": [
+          {
+            "id": "35c296a9-06dd-4c81-96a4-e447039d4f50",
+            "ancestors": [],
+            "type": "function",
+            "name": "get_header_fname",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 42,
+              "insert": 43
+            },
+            "params": [
+              {
+                "name": "serie",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "variant",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "revision",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": true,
+            "skip": false,
+            "docLength": 10,
+            "stripped": "sufix = \"\"\nif revision:\n        sufix = f\"X{revision}\"\nreturn f\"sam{serie}{variant}{sufix}-pinctrl.h\"",
+            "length": 17,
+            "comment": {
+              "description": "Generates the header file name for a SAM family microcontroller based on its series, variant, and revision information.",
+              "params": [
+                {
+                  "name": "serie",
+                  "type": "\"Atmel SAM family\".",
+                  "value": null,
+                  "description": "Atmel SAM series to which the header file name will be constructed.\n\n\t* `family`: The Atmel SAM family that the series belongs to.\n\t* `serie`: The series of the device, which can be further divided into sub-series based on specific attributes.\n\t* `variant`: The variant information of the device, which distinguishes it from other devices within the same series.\n\t\n\tThe return value of the function is the header file name, which includes the series and variant information followed by a suffix indicating the revision level of the device.\n"
+                },
+                {
+                  "name": "variant",
+                  "type": "\"Atmel SAM family series variant information\".",
+                  "value": null,
+                  "description": "variant information of the Atmel SAM family, which is used to construct the header file name.\n\n\t* `family`: Atmel SAM family\n\t* `serie`: Series\n\t* `variant`: Variant information (containing various attributes or properties)\n\t* `revision`: Revision number (optional, included in the header file name when provided)\n"
+                },
+                {
+                  "name": "revision",
+                  "type": "int",
+                  "value": null,
+                  "description": "4-digit revision number that will be appended to the header file name, uniquely identifying the specific version of the pinctrl configuration for the given series and variant."
+                }
+              ],
+              "returns": {
+                "type": "str",
+                "description": "a header file name that includes the Atmel SAM family, series, and variant information, followed by the revision number (if provided)."
+              }
+            }
+          },
+          {
+            "id": "f8acc98f-f406-497b-9e95-8afff13a2803",
+            "ancestors": [],
+            "type": "function",
+            "name": "get_port_pin",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 61,
+              "insert": 62
+            },
+            "params": [
+              {
+                "name": "pin_name",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": true,
+            "skip": false,
+            "docLength": 8,
+            "stripped": "m = re.match(r\"P([A-Z])(\\d+)\", pin_name.upper())\nif not m:\n        raise ValueError(f\"Unexpected pin name: {pin_name}\")\nreturn m.group(1), str(int(m.group(2)))",
+            "length": 15,
+            "comment": {
+              "description": "Parses a pin name into its corresponding port and pin number using regular expressions. If the input is invalid, it raises a `ValueError`.",
+              "params": [
+                {
+                  "name": "pin_name",
+                  "type": "str",
+                  "value": null,
+                  "description": "name of a GPIO pin, and it is used to extract the port and pin number from the pin name through a regular expression match."
+                }
+              ],
+              "returns": {
+                "type": "int",
+                "description": "a pair of values, where the first value is the port letter (e.g. \"A\") and the second value is the pin number (e.g. \"0\")."
+              }
+            }
+          },
+          {
+            "id": "c994bf0e-9781-44f0-a501-b6778861d8f7",
+            "ancestors": [],
+            "type": "function",
+            "name": "write_gpio_function",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 78,
+              "insert": 79
+            },
+            "params": [
+              {
+                "name": "f",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "port",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pin_num",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "fmap",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "function",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": false,
+            "skip": false,
+            "docLength": null,
+            "stripped": "f.write(f\"\\n/* p{port.lower()}{pin_num}_{function.lower()} */\\n\")\n    define = f\"#define P{port.upper()}{pin_num.upper()}_{function.upper()}\"\n    define_val = f\"{fmap}({port.lower()}, {pin_num}, {function.lower()}, \" \\\n                 f\"{function.lower()})\"\n    f.write(f\"{define} \\\\\\n\\t{define_val}\\n\")",
+            "length": 6,
+            "comment": {
+              "description": "Writes code to define a GPIO pin mapping and function, based on the given parameters.",
+              "params": [
+                {
+                  "name": "f",
+                  "type": "str",
+                  "value": null,
+                  "description": "current file being written to, and it is used to write the code for the GPIO function."
+                },
+                {
+                  "name": "port",
+                  "type": "str",
+                  "value": null,
+                  "description": "GPIO port where the pin is located."
+                },
+                {
+                  "name": "pin_num",
+                  "type": "int",
+                  "value": null,
+                  "description": "0-based index of the GPIO pin within the specified port."
+                },
+                {
+                  "name": "fmap",
+                  "type": "int",
+                  "value": null,
+                  "description": "mapping of the GPIO port, pin number, and function name to their corresponding C syntax definitions."
+                },
+                {
+                  "name": "function",
+                  "type": "str",
+                  "value": null,
+                  "description": "4-char code that maps to the desired GPIO pin functionality."
+                }
+              ],
+              "returns": null
+            }
+          },
+          {
+            "id": "d0380e28-a50d-4a87-a5b2-847a2f78839c",
+            "ancestors": [],
+            "type": "function",
+            "name": "write_wakeup_function",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 86,
+              "insert": 88
+            },
+            "params": [
+              {
+                "name": "f",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "port",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pin_num",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pinmux",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "periph",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "signal",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "fmap",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "function",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": false,
+            "skip": false,
+            "docLength": null,
+            "stripped": "f.write(f\"\\n/* p{port.lower()}{pin_num}{pinmux}_{periph}_{signal} \"\n            f\"*/\\n\")\n    define = f\"#define P{port.upper()}{pin_num.upper()}\" \\\n             f\"{pinmux.upper()}_{periph.upper()}_{signal.upper()}\"\n    define_val = f\"{fmap}({port.lower()}, {pin_num}, \" \\\n                 f\"{signal.lower()}, {function.lower()})\"\n    f.write(f\"{define} \\\\\\n\\t{define_val}\\n\")",
+            "length": 9,
+            "comment": {
+              "description": "Writes code to define and register a wake-up signal for a peripheral, based on the given parameters.",
+              "params": [
+                {
+                  "name": "f",
+                  "type": "str",
+                  "value": null,
+                  "description": "file object and is used to write the definition of the pinout mapping to the corresponding header file."
+                },
+                {
+                  "name": "port",
+                  "type": "str",
+                  "value": null,
+                  "description": "16-bit port number where the signal is located."
+                },
+                {
+                  "name": "pin_num",
+                  "type": "int",
+                  "value": null,
+                  "description": "0-based index of the pin within the port."
+                },
+                {
+                  "name": "pinmux",
+                  "type": "str",
+                  "value": null,
+                  "description": "8-bit PIN multiplexer signal for the specified peripheral interface."
+                },
+                {
+                  "name": "periph",
+                  "type": "str",
+                  "value": null,
+                  "description": "peripheral that the signal is generated for, which is used to generate the definition name for the signal in the define directive."
+                },
+                {
+                  "name": "signal",
+                  "type": "str",
+                  "value": null,
+                  "description": "signal name for which the peripheral pin is being configured."
+                },
+                {
+                  "name": "fmap",
+                  "type": "`function`.",
+                  "value": null,
+                  "description": "4-byte value that will be used to map the input signal to the output function of the peripheral device.\n\n\t* `fmap`: A C-style mapping function that takes four arguments - `port`, `pin_num`, `signal`, and `function`. The function returns a value based on the mapping rules defined in the `fmap` string.\n"
+                },
+                {
+                  "name": "function",
+                  "type": "str",
+                  "value": null,
+                  "description": "0-based index of the function to be called within the peripheral's API, as defined by `fmap`, and is used to specify the function to be executed when the signal is triggered."
+                }
+              ],
+              "returns": null
+            }
+          },
+          {
+            "id": "cfeab3ca-7aec-4ee0-8317-4362a7c08d20",
+            "ancestors": [],
+            "type": "function",
+            "name": "write_periph_function",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 97,
+              "insert": 99
+            },
+            "params": [
+              {
+                "name": "f",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "port",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pin_num",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pinmux",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "periph",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "signal",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "fmap",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "function",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": false,
+            "skip": false,
+            "docLength": null,
+            "stripped": "f.write(f\"\\n/* p{port.lower()}{pin_num}{pinmux}_{periph}_{signal} \"\n            f\"*/\\n\")\n    define = f\"#define P{port.upper()}{pin_num.upper()}\" \\\n             f\"{pinmux.upper()}_{periph.upper()}_{signal.upper()}\"\n    define_val = f\"{fmap}({port.lower()}, {pin_num}, \" \\\n                 f\"{pinmux.lower()}, {function.lower()})\"\n    f.write(f\"{define} \\\\\\n\\t{define_val}\\n\")",
+            "length": 9,
+            "comment": {
+              "description": "Writes a peripheral function to a header file, defining a macro and a value for it based on input parameters.",
+              "params": [
+                {
+                  "name": "f",
+                  "type": "str",
+                  "value": null,
+                  "description": "file to which the code is being written, and it is used to write the output to the file."
+                },
+                {
+                  "name": "port",
+                  "type": "`Port`.",
+                  "value": null,
+                  "description": "8-bit port number where the peripheral function will be defined.\n\n\t* `port`: A `Port` object representing the port where the peripheral is connected.\n\t* `pin_num`: An integer representing the pin number within the port.\n\t* `pinmux`: A string representing the pin multiplexing configuration for the peripheral, which determines how the peripheral is accessed.\n\t* `periph`: A string representing the name of the peripheral device.\n\t* `signal`: A string representing the signal being manipulated by the function.\n\t* `fmap`: A string representing the function mapping table for the peripheral, which maps the peripheral's signals to the corresponding CPU register addresses.\n\t* `function`: A string representing the name of the function being called in the `fmap` table.\n"
+                },
+                {
+                  "name": "pin_num",
+                  "type": "int",
+                  "value": null,
+                  "description": "1-based number of the GPIO pin within the port being defined, which is used to construct the define and define_val outputs."
+                },
+                {
+                  "name": "pinmux",
+                  "type": "str",
+                  "value": null,
+                  "description": "8-bit input/output pin multiplexing value for the peripheral signal being defined, which determines how the signal is routed to the output pin based on the input values."
+                },
+                {
+                  "name": "periph",
+                  "type": "\"peripheral\" (in uppercase).",
+                  "value": null,
+                  "description": "16-bit peripheral ID of the signal being defined, which is used to generate the definition name for the signal in the output.\n\n\t* `port`: The port to which the peripheral is connected.\n\t* `pin_num`: The number of the pin on the port where the peripheral is connected.\n\t* `pinmux`: The pin multiplexing status of the pin.\n\t* `periph`: The peripheral being defined, which may be a digital or analog input/output device.\n\t* `signal`: The signal generated by the peripheral.\n\t* `fmap`: A function that maps the port and pin numbers to the corresponding signal value.\n\t* `function`: The name of the function used to define the signal.\n"
+                },
+                {
+                  "name": "signal",
+                  "type": "\"const char\".",
+                  "value": null,
+                  "description": "4-char symbolic name of the signal to be defined, which is used to generate the define statement for the peripheral function.\n\n\t* `port`: The port that the pin is located in.\n\t* `pin_num`: The number of the pin within the port.\n\t* `pinmux`: The pin multiplexer value for the pin.\n\t* `periph`: The peripheral device that the pin belongs to.\n\t* `signal`: The name of the signal on the peripheral device.\n\t* `fmap`: A function that maps the port, pin number, and pin multiplexer value to a unique identifier for the signal.\n"
+                },
+                {
+                  "name": "fmap",
+                  "type": "function.",
+                  "value": null,
+                  "description": "mapping of the peripheral pin number to the corresponding function number.\n\n\t* `fmap` is a macro that expands to a string representing the function call.\n\t* It takes as inputs the port, pin number, pin multiplexer, peripheral, and signal names, respectively.\n\t* The macro uses the `lowercase` method to convert each of these input variables to lowercase before combining them into the final output string.\n\t* The resulting string is a concatenation of these input values separated by underscores.\n"
+                },
+                {
+                  "name": "function",
+                  "type": "str",
+                  "value": null,
+                  "description": "16-bit value that is assigned to the peripheral register after the pinmux and signal values have been defined."
+                }
+              ],
+              "returns": null
+            }
+          },
+          {
+            "id": "8a021a4d-e49f-42e5-9d4f-817fb105272e",
+            "ancestors": [],
+            "type": "function",
+            "name": "generate_atmel_sam_header",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 108,
+              "insert": 110
+            },
+            "params": [
+              {
+                "name": "outdir",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "family",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "fmap",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "serie",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "variant",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pin_cfgs",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "revision",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": false,
+            "skip": false,
+            "docLength": 10,
+            "stripped": "ofname = outdir / get_header_fname(serie, variant[\"pincode\"], revision)\nwith open(ofname, \"w\") as f:\n        f.write(HEADER)\n        f.write(f'\\n{\"#include <dt-bindings/pinctrl/atmel_sam_pinctrl.h>\"}\\n')\n\n        if len(variant) > 2:\n            if variant[\"exception\"]:\n                f.write(EXCEPTION)\n\n        for port, pin_num, pinmux, periph, signal, function in pin_cfgs:\n            if function in [\"gpio\", \"lpm\"]:\n                write_gpio_function(f, port, pin_num, fmap, function)\n                continue\n\n            if function in [\"wakeup\"]:\n                write_wakeup_function(f, port, pin_num, pinmux, periph,\n                                      signal, fmap, function)\n                continue\n\n            write_periph_function(f, port, pin_num, pinmux, periph,\n                                  signal, fmap, function)",
+            "length": 34,
+            "comment": {
+              "description": "Generates an Atmel SAM header file with pin configurations based on input parameters and writes it to a specified output directory.",
+              "params": [
+                {
+                  "name": "outdir",
+                  "type": "str",
+                  "value": null,
+                  "description": "output base directory where the generated Atmel SAM header file will be saved."
+                },
+                {
+                  "name": "family",
+                  "type": "str",
+                  "value": null,
+                  "description": "Atmel SAM family of microcontrollers that the function will generate a header file for."
+                },
+                {
+                  "name": "fmap",
+                  "type": "\"Function\".",
+                  "value": null,
+                  "description": "function to map pinctrl.\n\n\t* `function`: A string representing the function to map pinctrl. This can be one of `fmap.functions`, which is a set of predefined functions or custom functions defined in the `pinctrl_atmel_sam.yaml` configuration file.\n\t* `series`: A string representing the MCU series. This can be one of `series.values()`, which is a set of predefined series or custom series defined in the `pinctrl_atmel_sam.yaml` configuration file.\n\t* `variant`: An instance of `Variant` containing information about the variant, such as `pincode`, `revision`, and `exception`.\n\t* `pin_cfgs`: A list of tuples containing pin configuration data for each pin on the MCU. Each tuple contains four elements: `port`, `pin_num`, `pinmux`, and `periph` (or `signal`). The `port` and `pin_num` are integers representing the pin number and port name, respectively. `pinmux` is a string indicating the pin mux type, and `periph` or `signal` are strings representing the peripheral or signal name, respectively.\n\t\n\tThe `fmap` object is destructured to access its properties, which can be used to generate the Atmel SAM header file with the desired pin configurations.\n"
+                },
+                {
+                  "name": "serie",
+                  "type": "\"MCU Series\" value.",
+                  "value": null,
+                  "description": "MCU series for which the header file will be generated.\n\n\t* `series`: This is a string representing the MCU series. It could be one of the following: \"micro\", \"midrange\", or \"highend\".\n\t* `variant`: This is an object that contains various attributes related to the specific variant of the MCU being targeted. Some of these attributes include:\n\t\t+ `pincode`: A string representing the unique identifier for the pin configuration.\n\t\t+ `revision`: An integer representing the revision level of the device.\n\t\t+ `exception`: A boolean indicating whether an exception pin is present in the configuration.\n\t* `fmap`: This is a function that maps pinctrl functionality.\n\t* `pin_cfgs`: This is a list of tuples, each containing four elements:\n\t\t+ `port`: An integer representing the port number where the pin is located.\n\t\t+ `pin_num`: An integer representing the pin number within the port.\n\t\t+ `pinmux`: A string representing the pin multiplexing configuration.\n\t\t+ `periph`: A string representing the peripheral device that the pin is connected to.\n\t\t+ `signal`: A string representing the signal name associated with the pin.\n\t\t+ `function`: A string representing the pinctrl function associated with the pin.\n\t\n\tThese properties are used in the generation of the Atmel SAM header file, which includes the necessary includes, defines, and function declarations to support the desired pin configurations.\n"
+                },
+                {
+                  "name": "variant",
+                  "type": "object/container that stores variant information.",
+                  "value": null,
+                  "description": "variant-specific information, such as exception handling and pin configurations, that are included in the generated Atmel SAM header file.\n\n\t* `family`: The Atmel SAM family that the header is for.\n\t* `series`: The specific MCU series within the specified family.\n\t* `variant`: A dictionary containing variant-specific information, including:\n\t\t+ `pincode`: A unique identifier for the device's pin configuration.\n\t\t+ `exception`: An exception handler for the device.\n\t\t+ `periph`: A list of peripherals supported by the device.\n\t\t+ `signal`: A list of signals associated with each peripheral.\n\t\t+ `function`: A list of functions that can be applied to each signal.\n\t\n\tThe `pin_cfgs` input is a list of pin configurations, which consists of:\n\t\n\t* `port`: The port number where the pin is located (e.g., GPIO0, GPIO1).\n\t* `pin_num`: The pin number within the port (e.g., 0, 1).\n\t* `pinmux`: The pin multiplexing configuration (e.g., GPIO_MODULE_ PinMux).\n\t* `periph`: The peripheral associated with the pin (e.g., GPIO, I2C).\n\t* `signal`: The signal within the peripheral that the pin is associated with.\n\t* `function`: The function that can be applied to the signal (e.g., input, output).\n"
+                },
+                {
+                  "name": "pin_cfgs",
+                  "type": "list",
+                  "value": null,
+                  "description": "8-element tuple containing the pin configurations for each pin on the Atmel SAM device, which are then written to the header file using the `write_periph_function()` method."
+                },
+                {
+                  "name": "revision",
+                  "type": "int",
+                  "value": null,
+                  "description": "4-digit version number of the Atmel SAM header file to be generated, which is used to include the appropriate revision-specific code in the generated header file."
+                }
+              ],
+              "returns": null
+            }
+          },
+          {
+            "id": "a85cec2a-d0e9-4bea-bc2f-e4ffd1a82476",
+            "ancestors": [],
+            "type": "function",
+            "name": "build_atmel_sam_gpio_sets",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 144,
+              "insert": 145
+            },
+            "params": [
+              {
+                "name": "pin_cfgs",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pin",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": false,
+            "skip": false,
+            "docLength": 8,
+            "stripped": "port, pin_num = get_port_pin(pin)\nnew_item = (port, pin_num, \"a\", \"gpio\", \"gpio\", \"gpio\")\nif new_item not in pin_cfgs:\n        pin_cfgs.append(new_item)",
+            "length": 15,
+            "comment": {
+              "description": "Builds Atmel SAM GPIO configurations sets by taking a list of pins description and appending new items to a dictionary if they are not already present.",
+              "params": [
+                {
+                  "name": "pin_cfgs",
+                  "type": "list",
+                  "value": null,
+                  "description": "list of Atmel SAM GPIO configuration sets that will be built by the function."
+                },
+                {
+                  "name": "pin",
+                  "type": "str",
+                  "value": null,
+                  "description": "pin number for which the pin configuration is being built."
+                }
+              ],
+              "returns": null
+            }
+          },
+          {
+            "id": "1602f637-0b5c-40ac-a6df-4642e9abef24",
+            "ancestors": [],
+            "type": "function",
+            "name": "build_atmel_sam_sets",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 161,
+              "insert": 162
+            },
+            "params": [
+              {
+                "name": "pin_cfgs",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pin",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pin_lst",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "serie",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "variant",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "function",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": false,
+            "skip": false,
+            "docLength": 10,
+            "stripped": "if len(pin_lst[0]) > 0:\n        for pinmux, periph, signal, *excludes in pin_lst:\n            if len(excludes) > 0:\n                if serie in excludes[0]:\n                    continue\n                if variant[\"pincode\"] in excludes[0]:\n                    continue\n\n            port, pin_num = get_port_pin(pin)\n\n            pin_cfgs.append((port, pin_num, pinmux, periph, signal, function))",
+            "length": 23,
+            "comment": {
+              "description": "Generates a dictionary of Atmel SAM pin configurations based on provided series, variant, and pin descriptions. It iterates over the given pin list and adds pin configuration entries for each pin if it meets specific serie and variant criteria and if it is not already included in the dictionary.",
+              "params": [
+                {
+                  "name": "pin_cfgs",
+                  "type": "list",
+                  "value": null,
+                  "description": "dictionary that will store the Atmel SAM pin configurations sets produced by the function."
+                },
+                {
+                  "name": "pin",
+                  "type": "str",
+                  "value": null,
+                  "description": "32-bit pin number of the specific pin for which the configuration is being built."
+                },
+                {
+                  "name": "pin_lst",
+                  "type": "list",
+                  "value": null,
+                  "description": "list of pins configuration for each device series and variant, which is used to filter out the pins that need to be configured based on the given serie and variant information."
+                },
+                {
+                  "name": "serie",
+                  "type": "\"MCU Serie\".",
+                  "value": null,
+                  "description": "MCU serie for which the pin configurations will be built.\n\n\t* `MCU Serie`: This is an integer value that represents the series of the microcontroller. It can take on various values, such as `0x01` for the SAM D21, `0x02` for the SAM E5, and so on.\n\t* `Variant information`: This is a dictionary-like object that contains various properties related to the variant of the microcontroller. It may include attributes such as `pincode`, `clockspeed`, `voltage_range`, and others.\n"
+                },
+                {
+                  "name": "variant",
+                  "type": "\"MCU Serie\" or \"Variant information\".",
+                  "value": null,
+                  "description": "specific variant of the Atmel SAM microcontroller for which the pin configurations are being built.\n\n\t* `serie`: The MCU series.\n\t* `variant`: A variant information structure containing various attributes, including:\n\t\t+ `pincode`: A unique identifier for a pin on the MCU.\n\t\n\tThe function then proceeds to iterate over the `pins` list and checks if each pin should be included in the configuration based on the `serie` and `variant` properties. If the pin should be included, the function appends the pin's configuration to a dictionary of pin configurations.\n"
+                },
+                {
+                  "name": "function",
+                  "type": "str",
+                  "value": null,
+                  "description": "function that is associated with the pin configuration being built."
+                }
+              ],
+              "returns": null
+            }
+          },
+          {
+            "id": "6b26601b-1a82-498e-ac66-d169f512c774",
+            "ancestors": [],
+            "type": "function",
+            "name": "build_atmel_sam_pin_cfgs",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 186,
+              "insert": 187
+            },
+            "params": [
+              {
+                "name": "serie",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "variant",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "pins",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": true,
+            "skip": false,
+            "docLength": 10,
+            "stripped": "pin_cfgs = []\npins = OrderedDict(natsorted(pins.items(), key=lambda kv: kv[0]))\nfor pin, pin_cfg in pins.items():\n        if variant[\"pincode\"] not in pin_cfg[\"pincodes\"]:\n            continue\n\n        build_atmel_sam_gpio_sets(pin_cfgs, pin)\n\n        if \"periph\" in pin_cfg.keys():\n            build_atmel_sam_sets(pin_cfgs, pin, pin_cfg[\"periph\"],\n                                 serie, variant, \"periph\")\n        if \"extra\" in pin_cfg.keys():\n            build_atmel_sam_sets(pin_cfgs, pin, pin_cfg[\"extra\"],\n                                 serie, variant, \"extra\")\n        if \"system\" in pin_cfg.keys():\n            build_atmel_sam_sets(pin_cfgs, pin, pin_cfg[\"system\"],\n                                 serie, variant, \"system\")\n        if \"lpm\" in pin_cfg.keys():\n            build_atmel_sam_sets(pin_cfgs, pin, pin_cfg[\"lpm\"],\n                                 serie, variant, \"lpm\")\n        if \"wakeup\" in pin_cfg.keys():\n            build_atmel_sam_sets(pin_cfgs, pin, pin_cfg[\"wakeup\"],\n                                 serie, variant, \"wakeup\")\nreturn pin_cfgs",
+            "length": 39,
+            "comment": {
+              "description": "Generates pin configurations for an Atmel SAM MCU based on input series, variant, and pin descriptions. It builds GPIO sets, peripheral, extra, system, LPM, and wakeup configs using the provided pins.",
+              "params": [
+                {
+                  "name": "serie",
+                  "type": "\"MCU Serie\".",
+                  "value": null,
+                  "description": "Series of the Atmel SAM MCU for which the pin configurations are being built.\n\n\t* `serie`: The MCU Serie object, which has various attributes such as:\n\t\t+ `name`: The name of the MCU serie.\n\t\t+ `family`: The family name of the MCU serie.\n\t\t+ `variant`: The variant information of the MCU serie.\n\t\t+ `pins`: A dictionary containing pins description.\n"
+                },
+                {
+                  "name": "variant",
+                  "type": "information object.",
+                  "value": null,
+                  "description": "specific variant of the Atmel SAM device for which the pin configuration is being generated, and provides information such as the pin code, peripheral IDs, extra pins, system pins, LPM pins, and wake-up pins that are used to customize the pin configuration.\n\n\t* `serie`: MCU Serie. This property is used to identify the series of the device for which the pin configuration is being built.\n\t* `variant`: Variant information. This property contains details about the specific variant of the device, such as its unique identifier or name.\n\t* `pins`: Pins description. This property is a dictionary containing the pins used in the build process, where each key is the pin number and the value is a dictionary of pin configuration options.\n\t\n\tEach option in the pin configuration dictionary contains the following keys:\n\t\n\t* `pincodes`: A list of peripheral IDs that are associated with the pin.\n\t* `periph`: Peripheral ID. This key is used to specify which peripheral the pin is associated with.\n\t* `extra`: Extra configuration options for the pin.\n\t* `system`: System-level configuration options for the pin.\n\t* `lpm`: Low-power mode configuration options for the pin.\n\t* `wakeup`: Wake-up configuration options for the pin.\n\t\n\tThe function processes each pin in the `pins` dictionary and checks if the variant's pin code is present in the pin configuration. If it is, the function builds GPIO sets, peripheral sets, system sets, low-power mode sets, and wake-up sets for the corresponding pins. The resulting pin configurations are stored in a list called `pin_cfgs`.\n"
+                },
+                {
+                  "name": "pins",
+                  "type": "dict",
+                  "value": null,
+                  "description": "description of pins on the microcontroller, which are used to filter and determine the appropriate configuration for each pin based on the variant information provided."
+                }
+              ],
+              "returns": {
+                "type": "dict",
+                "description": "a dictionary of pin configurations for an Atmel SAM device, built based on the input variant and pins information."
+              }
+            }
+          },
+          {
+            "id": "ee40251f-58b6-4c5b-8812-9f2dda43ae51",
+            "ancestors": [],
+            "type": "function",
+            "name": "main",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 227,
+              "insert": 228
+            },
+            "params": [
+              {
+                "name": "indir",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "outdir",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": false,
+            "skip": false,
+            "docLength": 6,
+            "stripped": "if outdir.exists():\n        for entry in outdir.glob(\"sam*-pinctrl.h\"):\n            entry.unlink()\n    else:\n        outdir.mkdir()\nfor entry in indir.iterdir():\n        if not entry.is_file() or entry.suffix not in (\".yml\", \".yaml\"):\n            continue\n\n        config = yaml.load(open(entry), Loader=yaml.Loader)\n\n        model = config[\"model\"]\n        family = config[\"family\"]\n        fmap = config[\"map\"]\n        series = config[\"series\"]\n        variants = config[\"variants\"]\n        has_rev = \"revisions\" in config.keys()\n        pins = config[\"pins\"]\n\n        if model == \"atmel,sam\":\n            for serie in series:\n                for variant in [v for v in variants if serie in v[\"series\"]]:\n                    pin_cfgs = build_atmel_sam_pin_cfgs(serie, variant, pins)\n                    rev = config[\"revisions\"].get(serie) if has_rev else None\n                    generate_atmel_sam_header(outdir, family, fmap, serie,\n                                              variant, pin_cfgs, rev)\n        else:\n            raise ValueError(f\"Unexpected model: {model}\")",
+            "length": 37,
+            "comment": {
+              "description": "Performs the following tasks:\n\n* Unlinks any existing output files with specific names.\n* Loads YAML configuration files from the input directory and extracts relevant information.\n* Builds pin configurations for Atmel SAM devices based on model, family, map, series, variant, and pins.\n* Generates header files for the pin configurations.",
+              "params": [
+                {
+                  "name": "indir",
+                  "type": "directory object.",
+                  "value": null,
+                  "description": "directory containing pin configuration files.\n\n\t* `indir`: A directory containing pin configuration files.\n\t* `outdir`: An output directory where the generated code will be saved.\n"
+                },
+                {
+                  "name": "outdir",
+                  "type": "`os.Pathlike` object.",
+                  "value": null,
+                  "description": "directory where the pin configuration files will be generated.\n\n\t* exists(): Checks whether the directory exists.\n\t* glob(\"sam*-pinctrl.h\"): Returns a generator of files in the directory that match the pattern \"sam*-pinctrl.h\".\n\t* mkdir(): Creates the directory if it does not exist.\n\t\n\tAdditionally, the following attributes are described:\n\t\n\t* is_file(): Checks whether an entry is a file.\n\t* suffix: The file extension of an entry.\n\t* loader: The YAML loader used to load the YAML configuration from the file.\n"
+                }
+              ],
+              "returns": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "conftest.py",
+    "path": "scripts/tests/sampinctrl/conftest.py",
+    "content": {
+      "structured": {
+        "description": "",
+        "items": [
+          {
+            "id": "f5e8a6b6-1c37-4c73-baeb-0feecc469a40",
+            "ancestors": [],
+            "type": "function",
+            "name": "data",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 16,
+              "insert": 17
+            },
+            "params": [],
+            "returns": true,
+            "skip": false,
+            "docLength": 1,
+            "stripped": "return _SCRIPT_DIR / \"data\"",
+            "length": 3,
+            "comment": {
+              "description": "Loads test data files from a specified directory.",
+              "params": [],
+              "returns": {
+                "type": "directory path",
+                "description": "a directory path containing test data files.\n\n\t* `_SCRIPT_DIR`: The directory where the test files are located.\n\t* \"data\": A path to a directory containing test data files.\n"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "test_sampinctrl.py",
+    "path": "scripts/tests/sampinctrl/test_sampinctrl.py",
+    "content": {
+      "structured": {
+        "description": "",
+        "items": [
+          {
+            "id": "97ad28e1-b286-44a7-bf79-6a9ce3225cd4",
+            "ancestors": [],
+            "type": "function",
+            "name": "test_main",
+            "location": {
+              "offset": " ",
+              "indent": 4,
+              "start": 8,
+              "insert": 9
+            },
+            "params": [
+              {
+                "name": "data",
+                "value": null,
+                "type": null
+              },
+              {
+                "name": "tmp_path",
+                "value": null,
+                "type": null
+              }
+            ],
+            "returns": false,
+            "skip": false,
+            "docLength": 1,
+            "stripped": "main(data, tmp_path)\nFILES = (\n        \"samad-pinctrl.h\",\n        \"samae-pinctrl.h\",\n        \"samaf-pinctrl.h\",\n        \"sambe-pinctrl.h\",\n        \"sambf-pinctrl.h\",\n        \"samcf-pinctrl.h\",\n    )\nfor file in FILES:\n        ref_file = data / file\n        gen_file = tmp_path / file\n\n        assert gen_file.exists()\n\n        with open(ref_file) as ref, open(gen_file) as gen:\n            assert ref.read() == gen.read()",
+            "length": 22,
+            "comment": {
+              "description": "Verifies that pinctrl headers are generated correctly by comparing the contents of reference files with the generated files in a temporary directory.",
+              "params": [
+                {
+                  "name": "data",
+                  "type": "`object`.",
+                  "value": null,
+                  "description": "directory containing the reference pinctrl headers that are used for comparison with the generated files.\n\n\t* `data`: A dictionary containing the following keys:\n\t\t+ `FILES`: A list of strings representing the file paths to be checked for correctness.\n"
+                },
+                {
+                  "name": "tmp_path",
+                  "type": "str",
+                  "value": null,
+                  "description": "directory where the generated pinctrl headers will be stored."
+                }
+              ],
+              "returns": null
+            }
+          }
+        ]
+      }
+    }
+  }
+]
